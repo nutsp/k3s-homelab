@@ -119,6 +119,8 @@ spec:
           value: "/"
         - name: KC_PROXY_ADDRESS_FORWARDING
           value: "true"
+        - name: KC_PROXY_HEADERS
+          value: "xforwarded"
         - name: KC_DB_POOL_INITIAL_SIZE
           value: "5"
         - name: KC_DB_POOL_MIN_SIZE

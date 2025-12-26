@@ -125,7 +125,7 @@ keycloak:
     targetPort: 8080
   configmaps:
     # Keycloak configuration
-    proxy: reencrypt  # edge, reencrypt, passthrough, none - reencrypt works better with cookies
+    proxy: passthrough  # edge, reencrypt, passthrough, none - passthrough for dev mode
     hostname_strict: "false"
     hostname_strict_https: "false"
   secrets:
@@ -157,6 +157,8 @@ keycloak:
       value: "/"
     - name: KC_PROXY_ADDRESS_FORWARDING
       value: "true"
+    - name: KC_PROXY_HEADERS
+      value: "xforwarded"
     - name: KC_DB_POOL_INITIAL_SIZE
       value: "5"
     - name: KC_DB_POOL_MIN_SIZE
@@ -178,6 +180,7 @@ keycloak:
     annotations:
       traefik.ingress.kubernetes.io/rule-type: PathPrefix
       traefik.ingress.kubernetes.io/redirect-to-https: "false"
+      traefik.ingress.kubernetes.io/forward-auth-headers: "true"
     middlewares: []
     tls:
       enabled: false
