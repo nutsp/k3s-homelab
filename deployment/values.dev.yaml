@@ -155,7 +155,7 @@ keycloak:
     - name: KC_HTTP_ENABLED
       value: "true"
     # KC_PROXY is set from ConfigMap, not from env to avoid duplication
-  command:
+  args:
     - start
     - --optimized
   # Ingress configuration for Keycloak (using centralized ingress instead)
