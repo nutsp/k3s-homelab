@@ -1,0 +1,44 @@
+---
+# Source: deployment/templates/keycloak-config.yaml
+# Secret for Keycloak service credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keycloak-service-secrets
+  namespace: keycloak
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: keycloak-service
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/component: keycloak
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+stringData:
+  db_vendor: "postgres"
+  db_user: "appuser"
+  db_password: "mypassword"
+  db_host: "192.168.1.126"
+  db_port: "5432"
+  db_name: "keycloak"
+  admin_user: "admin"
+  admin_password: "admin"
+---
+# Source: deployment/templates/keycloak-config.yaml
+# ConfigMap for Keycloak service configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-service-config
+  namespace: keycloak
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: keycloak-service
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/component: keycloak
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  proxy: "edge"
+  hostname_strict: "false"
+  hostname_strict_https: "false"

@@ -156,3 +156,57 @@ Profile service image checksum
 {{- printf "%s:%s" .Values.profile.image.repository (.Values.profile.image.tag | default "latest") | b64enc | trunc 16 }}
 {{- end }}
 
+{{/*
+Keycloak service labels
+*/}}
+{{- define "deployment.keycloak.labels" -}}
+helm.sh/chart: {{ include "deployment.chart" . }}
+app.kubernetes.io/name: {{ .Values.keycloak.service.name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/component: keycloak
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Keycloak service selector labels
+*/}}
+{{- define "deployment.keycloak.selectorLabels" -}}
+app.kubernetes.io/name: {{ .Values.keycloak.service.name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Keycloak image
+*/}}
+{{- define "deployment.keycloak.image" -}}
+{{- if .Values.keycloak.image }}
+{{- printf "%s:%s" .Values.keycloak.image.repository (.Values.keycloak.image.tag | default "latest") }}
+{{- else }}
+{{- printf "%s:%s" "quay.io/keycloak/keycloak" "latest" }}
+{{- end }}
+{{- end }}
+
+{{/*
+Keycloak service configmap checksum
+*/}}
+{{- define "deployment.keycloak.configmap.checksum" -}}
+{{- .Values.keycloak.configmaps | toJson | b64enc | trunc 16 }}
+{{- end }}
+
+{{/*
+Keycloak service secret checksum
+*/}}
+{{- define "deployment.keycloak.secret.checksum" -}}
+{{- .Values.keycloak.secrets | toJson | b64enc | trunc 16 }}
+{{- end }}
+
+{{/*
+Keycloak service image checksum
+*/}}
+{{- define "deployment.keycloak.image.checksum" -}}
+{{- printf "%s:%s" .Values.keycloak.image.repository (.Values.keycloak.image.tag | default "latest") | b64enc | trunc 16 }}
+{{- end }}
+

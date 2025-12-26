@@ -39,7 +39,7 @@ metadata:
     app.kubernetes.io/version: "1.0"
     app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app.kubernetes.io/name: auth-service
@@ -48,9 +48,9 @@ spec:
     metadata:
       annotations:
         # Restart pods when image changes
-        checksum/image: bmdpbng6bGF0ZXN0
+        checksum/image: bmdpbng6MS4yOS1h
         image.repository: "nginx"
-        image.tag: "latest"
+        image.tag: "1.29-alpine3.23"
         # Restart pods when ConfigMap changes
         checksum/configmap: eyJ2aXJ0dWFsX3Nl
         # Restart pods when Secret changes
@@ -61,7 +61,7 @@ spec:
     spec:
       containers:
       - name: auth-service
-        image: nginx:latest
+        image: nginx:1.29-alpine3.23
         imagePullPolicy: Always
         ports:
         - containerPort: 80

@@ -1,0 +1,152 @@
+{{- if .Values.keycloak.enabled }}
+---
+# Deployment for Keycloak service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.keycloak.service.name }}
+  namespace: {{ .Values.keycloak.namespace }}
+  labels:
+    {{- include "deployment.keycloak.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.keycloak.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "deployment.keycloak.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        # Restart pods when image changes
+        checksum/image: {{ include "deployment.keycloak.image.checksum" . }}
+        image.repository: {{ .Values.keycloak.image.repository | quote }}
+        image.tag: {{ .Values.keycloak.image.tag | default "latest" | quote }}
+        # Restart pods when ConfigMap changes
+        checksum/configmap: {{ include "deployment.keycloak.configmap.checksum" . }}
+        # Restart pods when Secret changes
+        checksum/secret: {{ include "deployment.keycloak.secret.checksum" . }}
+      labels:
+        {{- include "deployment.keycloak.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if and .Values.keycloak.securityContext .Values.keycloak.securityContext.enabled }}
+      securityContext:
+        {{- if .Values.keycloak.securityContext.runAsNonRoot }}
+        runAsNonRoot: {{ .Values.keycloak.securityContext.runAsNonRoot }}
+        {{- end }}
+        {{- if .Values.keycloak.securityContext.runAsUser }}
+        runAsUser: {{ .Values.keycloak.securityContext.runAsUser }}
+        {{- end }}
+        {{- if .Values.keycloak.securityContext.fsGroup }}
+        fsGroup: {{ .Values.keycloak.securityContext.fsGroup }}
+        {{- end }}
+        {{- if .Values.keycloak.securityContext.allowPrivilegeEscalation }}
+        allowPrivilegeEscalation: {{ .Values.keycloak.securityContext.allowPrivilegeEscalation }}
+        {{- end }}
+        {{- if .Values.keycloak.securityContext.readOnlyRootFilesystem }}
+        readOnlyRootFilesystem: {{ .Values.keycloak.securityContext.readOnlyRootFilesystem }}
+        {{- end }}
+        {{- if .Values.keycloak.securityContext.capabilities }}
+        capabilities:
+          {{- toYaml .Values.keycloak.securityContext.capabilities | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: keycloak
+        image: {{ include "deployment.keycloak.image" . }}
+        imagePullPolicy: {{ .Values.keycloak.image.pullPolicy | default "IfNotPresent" }}
+        {{- if .Values.keycloak.command }}
+        command:
+          {{- toYaml .Values.keycloak.command | nindent 10 }}
+        {{- end }}
+        ports:
+        - containerPort: {{ .Values.keycloak.service.targetPort | default 8080 }}
+          name: http
+          protocol: TCP
+        env:
+        # Database configuration
+        - name: KC_DB
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: db_vendor
+        - name: KC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: db_user
+        - name: KC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: db_password
+        - name: KC_DB_URL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: db_host
+        - name: KC_DB_URL_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: db_port
+        - name: KC_DB_URL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: db_name
+        - name: KC_DB_URL
+          value: "jdbc:postgresql://$(KC_DB_URL_HOST):$(KC_DB_URL_PORT)/$(KC_DB_URL_DATABASE)"
+        # Admin credentials
+        - name: KC_BOOTSTRAP_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: admin_user
+        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: admin_password
+        # Additional environment variables
+        {{- if .Values.keycloak.env }}
+        {{- range .Values.keycloak.env }}
+        - name: {{ .name }}
+          value: {{ .value | quote }}
+        {{- end }}
+        {{- end }}
+        # Proxy configuration from ConfigMap
+        - name: KC_PROXY
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.keycloak.service.name }}-config
+              key: proxy
+        {{- if and .Values.keycloak.healthCheck .Values.keycloak.healthCheck.enabled }}
+        {{- if .Values.keycloak.healthCheck.livenessProbe }}
+        livenessProbe:
+          {{- toYaml .Values.keycloak.healthCheck.livenessProbe | nindent 10 }}
+        {{- end }}
+        {{- if .Values.keycloak.healthCheck.readinessProbe }}
+        readinessProbe:
+          {{- toYaml .Values.keycloak.healthCheck.readinessProbe | nindent 10 }}
+        {{- end }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.keycloak.resources | nindent 10 }}
+---
+# Service for Keycloak service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.keycloak.service.name }}
+  namespace: {{ .Values.keycloak.namespace }}
+  labels:
+    {{- include "deployment.keycloak.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.keycloak.service.type | default "ClusterIP" }}
+  selector:
+    {{- include "deployment.keycloak.selectorLabels" . | nindent 4 }}
+  ports:
+    - port: {{ .Values.keycloak.service.port | default 8080 }}
+      targetPort: {{ .Values.keycloak.service.targetPort | default 8080 }}
+      protocol: TCP
+      name: http
+{{- end }}

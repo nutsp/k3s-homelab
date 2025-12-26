@@ -1,0 +1,34 @@
+{{- if .Values.keycloak.enabled }}
+---
+# ConfigMap for Keycloak service configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.keycloak.service.name }}-config
+  namespace: {{ .Values.keycloak.namespace }}
+  labels:
+    {{- include "deployment.keycloak.labels" . | nindent 4 }}
+data:
+  proxy: {{ .Values.keycloak.configmaps.proxy | quote }}
+  hostname_strict: {{ .Values.keycloak.configmaps.hostname_strict | quote }}
+  hostname_strict_https: {{ .Values.keycloak.configmaps.hostname_strict_https | quote }}
+---
+# Secret for Keycloak service credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.keycloak.service.name }}-secrets
+  namespace: {{ .Values.keycloak.namespace }}
+  labels:
+    {{- include "deployment.keycloak.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  db_vendor: {{ .Values.keycloak.secrets.db_vendor | quote }}
+  db_user: {{ .Values.keycloak.secrets.db_user | quote }}
+  db_password: {{ .Values.keycloak.secrets.db_password | quote }}
+  db_host: {{ .Values.keycloak.secrets.db_host | quote }}
+  db_port: {{ .Values.keycloak.secrets.db_port | quote }}
+  db_name: {{ .Values.keycloak.secrets.db_name | quote }}
+  admin_user: {{ .Values.keycloak.secrets.admin_user | quote }}
+  admin_password: {{ .Values.keycloak.secrets.admin_password | quote }}
+{{- end }}

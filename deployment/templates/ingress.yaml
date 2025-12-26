@@ -36,6 +36,9 @@ spec:
             name: {{ .backend.serviceName }}
             port:
               number: {{ .backend.servicePort }}
+            # Note: Kubernetes Ingress doesn't support namespace in service backend
+            # Traefik will automatically search for services across all namespaces
+            # serviceNamespace in values is for documentation only
       {{- end }}
   {{- end }}
 {{- end }}

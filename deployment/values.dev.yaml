@@ -1,6 +1,6 @@
 # Global settings
 global:
-  namespace: app
+  namespace: ingress
 
 # Centralized Ingress configuration
 ingress:
@@ -26,6 +26,14 @@ ingress:
           backend:
             serviceName: profile-service
             servicePort: 80
+    - host: keycloak.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: keycloak-service
+            servicePort: 8080
+            serviceNamespace: keycloak  # Traefik supports cross-namespace services
 
 auth:
   enabled: true
@@ -107,3 +115,56 @@ notificationJob:
     db_port: "5432"
     db_name: notification_db
   env: []
+
+# Keycloak service configuration
+keycloak:
+  enabled: true
+  namespace: keycloak
+  replicas: 1
+  image:
+    repository: quay.io/keycloak/keycloak
+    tag: 25.0.6  # หรือใช้ latest
+    pullPolicy: IfNotPresent
+  service:
+    name: keycloak-service
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  configmaps:
+    # Keycloak configuration
+    proxy: edge  # edge, reencrypt, passthrough, none
+    hostname_strict: "false"
+    hostname_strict_https: "false"
+  secrets:
+    # Database configuration - ใช้ข้อมูลที่คุณให้มา
+    db_vendor: postgres
+    db_user: appuser
+    db_password: mypassword
+    db_host: 192.168.1.126
+    db_port: "5432"
+    db_name: keycloak  # ต้องสร้าง database นี้ใน PostgreSQL ก่อน
+    # Admin credentials
+    admin_user: admin
+    admin_password: admin  # เปลี่ยนเป็นรหัสผ่านที่ปลอดภัย
+  # Keycloak specific environment variables
+  env:
+    - name: KC_HEALTH_ENABLED
+      value: "true"
+    - name: KC_METRICS_ENABLED
+      value: "true"
+    - name: KC_HTTP_ENABLED
+      value: "true"
+    - name: KC_PROXY
+      value: "edge"
+  command:
+    - start
+    - --optimized
+  # Ingress configuration for Keycloak (using centralized ingress instead)
+  ingress:
+    enabled: false  # Disabled - using centralized ingress in ingress namespace
+  # Health checks
+  healthCheck:
+    enabled: false
+  # Security context
+  securityContext:
+    enabled: false

@@ -1,0 +1,139 @@
+---
+# Source: deployment/templates/keycloak-service.yaml
+# Service for Keycloak service
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak-service
+  namespace: keycloak
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: keycloak-service
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/component: keycloak
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: keycloak-service
+    app.kubernetes.io/instance: app-deployment
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+---
+# Source: deployment/templates/keycloak-service.yaml
+# Deployment for Keycloak service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keycloak-service
+  namespace: keycloak
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: keycloak-service
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/component: keycloak
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: keycloak-service
+      app.kubernetes.io/instance: app-deployment
+  template:
+    metadata:
+      annotations:
+        # Restart pods when image changes
+        checksum/image: cXVheS5pby9rZXlj
+        image.repository: "quay.io/keycloak/keycloak"
+        image.tag: "25.0.6"
+        # Restart pods when ConfigMap changes
+        checksum/configmap: eyJob3N0bmFtZV9z
+        # Restart pods when Secret changes
+        checksum/secret: eyJhZG1pbl9wYXNz
+      labels:
+        app.kubernetes.io/name: keycloak-service
+        app.kubernetes.io/instance: app-deployment
+    spec:
+      containers:
+      - name: keycloak
+        image: quay.io/keycloak/keycloak:25.0.6
+        imagePullPolicy: IfNotPresent
+        command:
+          - start
+          - --optimized
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        env:
+        # Database configuration
+        - name: KC_DB
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-service-secrets
+              key: db_vendor
+        - name: KC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-service-secrets
+              key: db_user
+        - name: KC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-service-secrets
+              key: db_password
+        - name: KC_DB_URL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-service-secrets
+              key: db_host
+        - name: KC_DB_URL_PORT
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-service-secrets
+              key: db_port
+        - name: KC_DB_URL_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-service-secrets
+              key: db_name
+        - name: KC_DB_URL
+          value: "jdbc:postgresql://$(KC_DB_URL_HOST):$(KC_DB_URL_PORT)/$(KC_DB_URL_DATABASE)"
+        # Admin credentials
+        - name: KC_BOOTSTRAP_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-service-secrets
+              key: admin_user
+        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: keycloak-service-secrets
+              key: admin_password
+        # Additional environment variables
+        - name: KC_HEALTH_ENABLED
+          value: "true"
+        - name: KC_METRICS_ENABLED
+          value: "true"
+        - name: KC_HTTP_ENABLED
+          value: "true"
+        - name: KC_PROXY
+          value: "edge"
+        # Proxy configuration from ConfigMap
+        - name: KC_PROXY
+          valueFrom:
+            configMapKeyRef:
+              name: keycloak-service-config
+              key: proxy
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
