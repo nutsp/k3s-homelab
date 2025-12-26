@@ -86,12 +86,14 @@ spec:
               name: {{ .Values.keycloak.service.name }}-secrets
               key: db_password
         # Admin credentials
-        - name: KC_BOOTSTRAP_ADMIN_USERNAME
+        # For dev mode: use KEYCLOAK_ADMIN and KEYCLOAK_ADMIN_PASSWORD
+        # For production mode: use KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD
+        - name: KEYCLOAK_ADMIN
           valueFrom:
             secretKeyRef:
               name: {{ .Values.keycloak.service.name }}-secrets
               key: admin_user
-        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+        - name: KEYCLOAK_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Values.keycloak.service.name }}-secrets
