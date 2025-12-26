@@ -125,7 +125,7 @@ keycloak:
     port: 8080
     targetPort: 8080
   configmaps:
-    # Keycloak configuration
+    # Keycloak configuration (not used in optimized build - use env vars instead)
     proxy: edge  # edge works best with Traefik Ingress
     hostname_strict: "false"
     hostname_strict_https: "false"
@@ -157,6 +157,8 @@ keycloak:
       value: "edge"
     - name: KC_PROXY_HEADERS
       value: "xforwarded"
+    - name: KC_HTTP_RELATIVE_PATH
+      value: "/"
     - name: KC_DB_POOL_INITIAL_SIZE
       value: "5"
     - name: KC_DB_POOL_MIN_SIZE
