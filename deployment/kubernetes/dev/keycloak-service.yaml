@@ -39,7 +39,7 @@ metadata:
     app.kubernetes.io/version: "1.0"
     app.kubernetes.io/managed-by: Helm
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app.kubernetes.io/name: keycloak-service
@@ -59,12 +59,20 @@ spec:
         app.kubernetes.io/name: keycloak-service
         app.kubernetes.io/instance: app-deployment
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        capabilities:
+          drop:
+          - ALL
       containers:
       - name: keycloak
         image: quay.io/keycloak/keycloak:26.4.7
         imagePullPolicy: IfNotPresent
         args:
-          - start-dev
+          - start
+          - --optimized
         ports:
         - containerPort: 8080
           name: http
@@ -90,14 +98,14 @@ spec:
               name: keycloak-service-secrets
               key: db_password
         # Admin credentials
-        # For dev mode: use KEYCLOAK_ADMIN and KEYCLOAK_ADMIN_PASSWORD
-        # For production mode: use KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD
-        - name: KEYCLOAK_ADMIN
+        # For dev mode (start-dev): use KEYCLOAK_ADMIN and KEYCLOAK_ADMIN_PASSWORD
+        # For production mode (start --optimized): use KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD
+        - name: KC_BOOTSTRAP_ADMIN_USERNAME
           valueFrom:
             secretKeyRef:
               name: keycloak-service-secrets
               key: admin_user
-        - name: KEYCLOAK_ADMIN_PASSWORD
+        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
               name: keycloak-service-secrets
@@ -125,12 +133,36 @@ spec:
           value: "5"
         - name: KC_DB_POOL_MAX_SIZE
           value: "20"
+        - name: KC_LOG_LEVEL
+          value: "INFO"
+        - name: KC_CACHE
+          value: "ispn"
+        - name: KC_CACHE_STACK
+          value: "tcp"
         # Proxy configuration from ConfigMap
         - name: KC_PROXY
           valueFrom:
             configMapKeyRef:
               name: keycloak-service-config
               key: proxy
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health/live
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health/ready
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
         resources:
           limits:
             cpu: 1000m

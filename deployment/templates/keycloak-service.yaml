@@ -86,8 +86,9 @@ spec:
               name: {{ .Values.keycloak.service.name }}-secrets
               key: db_password
         # Admin credentials
-        # For dev mode: use KEYCLOAK_ADMIN and KEYCLOAK_ADMIN_PASSWORD
-        # For production mode: use KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD
+        # For dev mode (start-dev): use KEYCLOAK_ADMIN and KEYCLOAK_ADMIN_PASSWORD
+        # For production mode (start --optimized): use KC_BOOTSTRAP_ADMIN_USERNAME and KC_BOOTSTRAP_ADMIN_PASSWORD
+        {{- if hasPrefix "start-dev" (join " " .Values.keycloak.args) }}
         - name: KEYCLOAK_ADMIN
           valueFrom:
             secretKeyRef:
@@ -98,6 +99,18 @@ spec:
             secretKeyRef:
               name: {{ .Values.keycloak.service.name }}-secrets
               key: admin_password
+        {{- else }}
+        - name: KC_BOOTSTRAP_ADMIN_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: admin_user
+        - name: KC_BOOTSTRAP_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: admin_password
+        {{- end }}
         # Additional environment variables
         {{- if .Values.keycloak.env }}
         {{- range .Values.keycloak.env }}

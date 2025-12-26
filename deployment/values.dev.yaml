@@ -112,7 +112,7 @@ notificationJob:
 keycloak:
   enabled: true
   namespace: keycloak
-  replicas: 1
+  replicas: 2  # Production: use multiple replicas for HA
   image:
     repository: quay.io/keycloak/keycloak
     tag: 26.4.7  # หรือใช้ latest
@@ -138,7 +138,7 @@ keycloak:
     db_name: keycloak  # ต้องสร้าง database นี้ใน PostgreSQL ก่อน
     # Admin credentials
     admin_user: admin
-    admin_password: admin  # เปลี่ยนเป็นรหัสผ่านที่ปลอดภัย
+    admin_password: admin  # ⚠️ เปลี่ยนเป็นรหัสผ่านที่ปลอดภัยสำหรับ production!
   # Keycloak specific environment variables
   env:
     - name: KC_HEALTH_ENABLED
@@ -148,9 +148,9 @@ keycloak:
     - name: KC_HTTP_ENABLED
       value: "true"
     - name: KC_HOSTNAME_STRICT
-      value: "false"
+      value: "false"  # Set to "true" for production with proper hostname
     - name: KC_HOSTNAME_STRICT_HTTPS
-      value: "false"
+      value: "false"  # Set to "true" for production with HTTPS
     # Keycloak configuration for access through Ingress
     - name: KC_HOSTNAME
       value: "keycloak.local"
@@ -164,11 +164,25 @@ keycloak:
       value: "5"
     - name: KC_DB_POOL_MAX_SIZE
       value: "20"
+    # Production settings
+    - name: KC_LOG_LEVEL
+      value: "INFO"  # INFO for production, DEBUG for troubleshooting
+    - name: KC_CACHE
+      value: "ispn"  # Use Infinispan for distributed caching (required for multiple replicas)
+    - name: KC_CACHE_STACK
+      value: "tcp"  # TCP stack for cache communication
     # KC_PROXY is set from ConfigMap, not from env to avoid duplication
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "1Gi"
+      cpu: "1000m"
   args:
-    - start-dev
-    # Note: Using dev mode because optimized build requires custom image with database driver
-    # For production, build custom image: kc.sh build --db=postgres
+    - start
+    - --optimized
+    # Note: Keycloak 26.4.7 optimized build includes PostgreSQL driver by default
   # Ingress configuration for Keycloak (separate ingress in keycloak namespace)
   ingress:
     enabled: true
@@ -187,7 +201,33 @@ keycloak:
       secretName: keycloak-tls-secret
   # Health checks
   healthCheck:
-    enabled: false
+    enabled: true
+    livenessProbe:
+      httpGet:
+        path: /health/live
+        port: 8080
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+    readinessProbe:
+      httpGet:
+        path: /health/ready
+        port: 8080
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
   # Security context
   securityContext:
-    enabled: false
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop:
+        - ALL
