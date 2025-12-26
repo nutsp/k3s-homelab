@@ -125,7 +125,7 @@ keycloak:
     targetPort: 8080
   configmaps:
     # Keycloak configuration
-    proxy: passthrough  # edge, reencrypt, passthrough, none - passthrough for dev mode
+    proxy: none  # edge, reencrypt, passthrough, none - none for dev mode without proxy
     hostname_strict: "false"
     hostname_strict_https: "false"
   secrets:
@@ -151,14 +151,15 @@ keycloak:
       value: "false"
     - name: KC_HOSTNAME_STRICT_HTTPS
       value: "false"
-    - name: KC_HOSTNAME
-      value: "keycloak.local"
-    - name: KC_HTTP_RELATIVE_PATH
-      value: "/"
-    - name: KC_PROXY_ADDRESS_FORWARDING
-      value: "true"
-    - name: KC_PROXY_HEADERS
-      value: "xforwarded"
+    # Remove hostname and proxy settings for dev mode - let Keycloak handle it directly
+    # - name: KC_HOSTNAME
+    #   value: "keycloak.local"
+    # - name: KC_HTTP_RELATIVE_PATH
+    #   value: "/"
+    # - name: KC_PROXY_ADDRESS_FORWARDING
+    #   value: "true"
+    # - name: KC_PROXY_HEADERS
+    #   value: "xforwarded"
     - name: KC_DB_POOL_INITIAL_SIZE
       value: "5"
     - name: KC_DB_POOL_MIN_SIZE
