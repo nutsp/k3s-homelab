@@ -117,6 +117,7 @@ keycloak:
     repository: quay.io/keycloak/keycloak
     tag: 25.0.6  # หรือใช้ latest
     pullPolicy: IfNotPresent
+    # Note: Keycloak optimized build includes PostgreSQL driver by default
   service:
     name: keycloak-service
     type: ClusterIP
@@ -150,10 +151,17 @@ keycloak:
       value: "false"
     - name: KC_HOSTNAME_STRICT_HTTPS
       value: "false"
+    - name: KC_DB_POOL_INITIAL_SIZE
+      value: "5"
+    - name: KC_DB_POOL_MIN_SIZE
+      value: "5"
+    - name: KC_DB_POOL_MAX_SIZE
+      value: "20"
     # KC_PROXY is set from ConfigMap, not from env to avoid duplication
   args:
-    - start
-    - --optimized
+    - start-dev
+    # Note: Using dev mode because optimized build requires custom image with database driver
+    # For production, build custom image: kc.sh build --db=postgres
   # Ingress configuration for Keycloak (separate ingress in keycloak namespace)
   ingress:
     enabled: true
