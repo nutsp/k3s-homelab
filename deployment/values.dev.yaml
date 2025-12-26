@@ -116,8 +116,11 @@ keycloak:
   image:
     repository: keycloak
     tag: 26.4.7-postgres  # หรือใช้ latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Never  # Use Never for local images, or push to registry and use IfNotPresent
     # Note: Keycloak optimized build includes PostgreSQL driver by default
+    # To use this image, either:
+    # 1. Build locally and use pullPolicy: Never
+    # 2. Push to registry: docker tag keycloak:26.4.7-postgres your-registry/keycloak:26.4.7-postgres && docker push
   service:
     name: keycloak-service
     type: ClusterIP
