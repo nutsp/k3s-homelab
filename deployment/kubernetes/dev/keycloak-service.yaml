@@ -117,6 +117,8 @@ spec:
           value: "keycloak.local"
         - name: KC_HTTP_RELATIVE_PATH
           value: "/"
+        - name: KC_PROXY_ADDRESS_FORWARDING
+          value: "true"
         - name: KC_DB_POOL_INITIAL_SIZE
           value: "5"
         - name: KC_DB_POOL_MIN_SIZE

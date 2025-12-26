@@ -40,6 +40,6 @@ metadata:
     app.kubernetes.io/version: "1.0"
     app.kubernetes.io/managed-by: Helm
 data:
-  proxy: "edge"
+  proxy: "reencrypt"
   hostname_strict: "false"
   hostname_strict_https: "false"
