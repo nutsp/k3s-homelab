@@ -195,8 +195,10 @@ all: lint dev validate
 	@echo ""
 	@echo "✓ All tasks completed successfully"
 
-.PHONY: keycloak
+## build-keycloak: build Keycloak image with PostgreSQL driver
+.PHONY: build-keycloak
 build-keycloak:
 	@echo "Building keycloak image..."
-	@docker build -t ctmimage-keycloak:26.4.7-postgres -f deployment/ctmimage/Dockerfile.kc .
+	@docker build -t keycloak:26.4.7-postgres -f ctmimage/Dockerfile.kc .
 	@echo "✓ Keycloak image built successfully"
+	@echo "Image: keycloak:26.4.7-postgres"
