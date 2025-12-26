@@ -202,3 +202,18 @@ build-keycloak:
 	@docker build -t keycloak:26.4.7-postgres -f ctmimage/Dockerfile.kc .
 	@echo "✓ Keycloak image built successfully"
 	@echo "Image: keycloak:26.4.7-postgres"
+
+## load-keycloak: load Keycloak image into k3s cluster
+.PHONY: load-keycloak
+load-keycloak:
+	@echo "Loading keycloak image into k3s cluster..."
+	@docker save keycloak:26.4.7-postgres | sudo k3s ctr images import - || \
+		(docker save keycloak:26.4.7-postgres | sudo ctr -n k8s.io images import -)
+	@echo "✓ Keycloak image loaded into k3s cluster"
+	@echo "Verify: sudo k3s ctr images list | grep keycloak"
+
+## build-and-load-keycloak: build and load Keycloak image
+.PHONY: build-and-load-keycloak
+build-and-load-keycloak: build-keycloak load-keycloak
+	@echo ""
+	@echo "✓ Keycloak image built and loaded successfully"
