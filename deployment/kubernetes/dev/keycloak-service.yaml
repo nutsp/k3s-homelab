@@ -48,9 +48,9 @@ spec:
     metadata:
       annotations:
         # Restart pods when image changes
-        checksum/image: cXVheS5pby9rZXlj
-        image.repository: "quay.io/keycloak/keycloak"
-        image.tag: "26.4.7"
+        checksum/image: a2V5Y2xvYWs6MjYu
+        image.repository: "keycloak"
+        image.tag: "26.4.7-postgres"
         # Restart pods when ConfigMap changes
         checksum/configmap: eyJob3N0bmFtZV9z
         # Restart pods when Secret changes
@@ -68,7 +68,7 @@ spec:
           - ALL
       containers:
       - name: keycloak
-        image: quay.io/keycloak/keycloak:26.4.7
+        image: keycloak:26.4.7-postgres
         imagePullPolicy: IfNotPresent
         args:
           - start
