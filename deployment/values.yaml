@@ -267,6 +267,10 @@ keycloak:
       value: "true"
     - name: KC_HTTP_ENABLED
       value: "true"
+    - name: KC_HOSTNAME_STRICT
+      value: "false"
+    - name: KC_HOSTNAME_STRICT_HTTPS
+      value: "false"
     # KC_PROXY is set from ConfigMap, not from env to avoid duplication
   args:
     - start
