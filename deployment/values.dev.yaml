@@ -33,7 +33,7 @@ auth:
   replicas: 2
   image:
     repository: nginx
-    tag: latest  # Recommended: Use specific version tag (e.g., v1.2.3)
+    tag: 1.29-alpine3.23  # Recommended: Use specific version tag (e.g., v1.2.3)
     pullPolicy: Always  # Use Always when using latest tag
   service:
     name: auth-service
