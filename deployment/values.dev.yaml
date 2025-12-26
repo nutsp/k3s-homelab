@@ -114,13 +114,11 @@ keycloak:
   namespace: keycloak
   replicas: 2  # Production: use multiple replicas for HA
   image:
-    repository: keycloak
+    repository: docker.io/library/keycloak
     tag: 26.4.7-postgres  # หรือใช้ latest
-    pullPolicy: Never  # Use Never for local images, or push to registry and use IfNotPresent
+    pullPolicy: Never  # Use Never for local images loaded into k3s
     # Note: Keycloak optimized build includes PostgreSQL driver by default
-    # To use this image, either:
-    # 1. Build locally and use pullPolicy: Never
-    # 2. Push to registry: docker tag keycloak:26.4.7-postgres your-registry/keycloak:26.4.7-postgres && docker push
+    # Image must be loaded into k3s: make load-keycloak
   service:
     name: keycloak-service
     type: ClusterIP
