@@ -59,13 +59,6 @@ spec:
         app.kubernetes.io/name: auth-service
         app.kubernetes.io/instance: app-deployment
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
-        capabilities:
-          drop:
-          - ALL
       containers:
       - name: auth-service
         image: nginx:latest
