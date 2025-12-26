@@ -66,22 +66,10 @@ spec:
           name: http
           protocol: TCP
         env:
-        # Database configuration
+        # Database configuration for Keycloak 25.0.6
+        # Use separate host, port, database variables (Keycloak will construct URL automatically)
         - name: KC_DB
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.keycloak.service.name }}-secrets
-              key: db_vendor
-        - name: KC_DB_USERNAME
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.keycloak.service.name }}-secrets
-              key: db_user
-        - name: KC_DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.keycloak.service.name }}-secrets
-              key: db_password
+          value: postgres
         - name: KC_DB_URL_HOST
           valueFrom:
             secretKeyRef:
@@ -97,8 +85,16 @@ spec:
             secretKeyRef:
               name: {{ .Values.keycloak.service.name }}-secrets
               key: db_name
-        - name: KC_DB_URL
-          value: "jdbc:postgresql://$(KC_DB_URL_HOST):$(KC_DB_URL_PORT)/$(KC_DB_URL_DATABASE)"
+        - name: KC_DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: db_user
+        - name: KC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.keycloak.service.name }}-secrets
+              key: db_password
         # Admin credentials
         - name: KC_BOOTSTRAP_ADMIN_USERNAME
           valueFrom:
