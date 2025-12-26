@@ -267,8 +267,7 @@ keycloak:
       value: "true"
     - name: KC_HTTP_ENABLED
       value: "true"
-    - name: KC_PROXY
-      value: "edge"
+    # KC_PROXY is set from ConfigMap, not from env to avoid duplication
   command:
     - start
     - --optimized

@@ -122,8 +122,6 @@ spec:
           value: "true"
         - name: KC_HTTP_ENABLED
           value: "true"
-        - name: KC_PROXY
-          value: "edge"
         # Proxy configuration from ConfigMap
         - name: KC_PROXY
           valueFrom:

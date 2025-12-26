@@ -96,6 +96,25 @@ spec:
             resources:
               {{- toYaml .Values.notificationJob.resources | nindent 14 }}
             {{- end }}
+            {{- if and .Values.notificationJob.securityContext .Values.notificationJob.securityContext.enabled }}
+            securityContext:
+              {{- if .Values.notificationJob.securityContext.runAsNonRoot }}
+              runAsNonRoot: {{ .Values.notificationJob.securityContext.runAsNonRoot }}
+              {{- end }}
+              {{- if .Values.notificationJob.securityContext.runAsUser }}
+              runAsUser: {{ .Values.notificationJob.securityContext.runAsUser }}
+              {{- end }}
+              {{- if .Values.notificationJob.securityContext.allowPrivilegeEscalation }}
+              allowPrivilegeEscalation: {{ .Values.notificationJob.securityContext.allowPrivilegeEscalation }}
+              {{- end }}
+              {{- if .Values.notificationJob.securityContext.readOnlyRootFilesystem }}
+              readOnlyRootFilesystem: {{ .Values.notificationJob.securityContext.readOnlyRootFilesystem }}
+              {{- end }}
+              {{- if .Values.notificationJob.securityContext.capabilities }}
+              capabilities:
+                {{- toYaml .Values.notificationJob.securityContext.capabilities | nindent 16 }}
+              {{- end }}
+            {{- end }}
           {{- if and .Values.notificationJob.securityContext .Values.notificationJob.securityContext.enabled }}
           securityContext:
             {{- if .Values.notificationJob.securityContext.runAsNonRoot }}
@@ -113,10 +132,7 @@ spec:
             {{- if .Values.notificationJob.securityContext.readOnlyRootFilesystem }}
             readOnlyRootFilesystem: {{ .Values.notificationJob.securityContext.readOnlyRootFilesystem }}
             {{- end }}
-            {{- if .Values.notificationJob.securityContext.capabilities }}
-            capabilities:
-              {{- toYaml .Values.notificationJob.securityContext.capabilities | nindent 14 }}
-            {{- end }}
+            # capabilities must be at container level, not pod level
           {{- end }}
           {{- if .Values.notificationJob.imagePullSecrets }}
           imagePullSecrets:
