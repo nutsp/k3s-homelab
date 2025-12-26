@@ -115,10 +115,6 @@ spec:
               name: keycloak-service-secrets
               key: admin_password
         # Additional environment variables
-        - name: KC_HEALTH_ENABLED
-          value: "true"
-        - name: KC_METRICS_ENABLED
-          value: "true"
         - name: KC_HTTP_ENABLED
           value: "true"
         - name: KC_HOSTNAME_STRICT
@@ -127,10 +123,10 @@ spec:
           value: "false"
         - name: KC_HOSTNAME
           value: "keycloak.local"
-        - name: KC_HTTP_RELATIVE_PATH
-          value: "/"
-        - name: KC_PROXY_ADDRESS_FORWARDING
-          value: "true"
+        - name: KC_PROXY
+          value: "edge"
+        - name: KC_PROXY_HEADERS
+          value: "xforwarded"
         - name: KC_DB_POOL_INITIAL_SIZE
           value: "5"
         - name: KC_DB_POOL_MIN_SIZE
@@ -143,12 +139,12 @@ spec:
           value: "ispn"
         - name: KC_CACHE_STACK
           value: "tcp"
-        # Proxy configuration from ConfigMap
-        - name: KC_PROXY
-          valueFrom:
-            configMapKeyRef:
-              name: keycloak-service-config
-              key: proxy
+        # Proxy configuration - use environment variable instead of ConfigMap for optimized build
+        # - name: KC_PROXY
+        #   valueFrom:
+        #     configMapKeyRef:
+        #       name: keycloak-service-config
+        #       key: proxy
         livenessProbe:
           failureThreshold: 3
           httpGet:

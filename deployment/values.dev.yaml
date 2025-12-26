@@ -141,11 +141,9 @@ keycloak:
     admin_user: admin
     admin_password: admin  # ⚠️ เปลี่ยนเป็นรหัสผ่านที่ปลอดภัยสำหรับ production!
   # Keycloak specific environment variables
+  # Note: KC_HEALTH_ENABLED, KC_METRICS_ENABLED, KC_HTTP_RELATIVE_PATH are build-time options
+  # They are set in Dockerfile.kc during build
   env:
-    - name: KC_HEALTH_ENABLED
-      value: "true"
-    - name: KC_METRICS_ENABLED
-      value: "true"
     - name: KC_HTTP_ENABLED
       value: "true"
     - name: KC_HOSTNAME_STRICT
@@ -155,10 +153,10 @@ keycloak:
     # Keycloak configuration for access through Ingress
     - name: KC_HOSTNAME
       value: "keycloak.local"
-    - name: KC_HTTP_RELATIVE_PATH
-      value: "/"
-    - name: KC_PROXY_ADDRESS_FORWARDING
-      value: "true"
+    - name: KC_PROXY
+      value: "edge"
+    - name: KC_PROXY_HEADERS
+      value: "xforwarded"
     - name: KC_DB_POOL_INITIAL_SIZE
       value: "5"
     - name: KC_DB_POOL_MIN_SIZE

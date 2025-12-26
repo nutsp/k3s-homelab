@@ -134,12 +134,12 @@ spec:
           value: {{ .value | quote }}
         {{- end }}
         {{- end }}
-        # Proxy configuration from ConfigMap
-        - name: KC_PROXY
-          valueFrom:
-            configMapKeyRef:
-              name: {{ .Values.keycloak.service.name }}-config
-              key: proxy
+        # Proxy configuration - use environment variable instead of ConfigMap for optimized build
+        # - name: KC_PROXY
+        #   valueFrom:
+        #     configMapKeyRef:
+        #       name: {{ .Values.keycloak.service.name }}-config
+        #       key: proxy
         {{- if and .Values.keycloak.healthCheck .Values.keycloak.healthCheck.enabled }}
         {{- if .Values.keycloak.healthCheck.livenessProbe }}
         livenessProbe:
