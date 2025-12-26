@@ -44,10 +44,7 @@ spec:
         {{- if .Values.keycloak.securityContext.readOnlyRootFilesystem }}
         readOnlyRootFilesystem: {{ .Values.keycloak.securityContext.readOnlyRootFilesystem }}
         {{- end }}
-        {{- if .Values.keycloak.securityContext.capabilities }}
-        capabilities:
-          {{- toYaml .Values.keycloak.securityContext.capabilities | nindent 10 }}
-        {{- end }}
+        # capabilities must be at container level, not pod level
       {{- end }}
       containers:
       - name: keycloak
@@ -60,6 +57,25 @@ spec:
         {{- if .Values.keycloak.args }}
         args:
           {{- toYaml .Values.keycloak.args | nindent 10 }}
+        {{- end }}
+        {{- if and .Values.keycloak.securityContext .Values.keycloak.securityContext.enabled }}
+        securityContext:
+          {{- if .Values.keycloak.securityContext.runAsNonRoot }}
+          runAsNonRoot: {{ .Values.keycloak.securityContext.runAsNonRoot }}
+          {{- end }}
+          {{- if .Values.keycloak.securityContext.runAsUser }}
+          runAsUser: {{ .Values.keycloak.securityContext.runAsUser }}
+          {{- end }}
+          {{- if .Values.keycloak.securityContext.allowPrivilegeEscalation }}
+          allowPrivilegeEscalation: {{ .Values.keycloak.securityContext.allowPrivilegeEscalation }}
+          {{- end }}
+          {{- if .Values.keycloak.securityContext.readOnlyRootFilesystem }}
+          readOnlyRootFilesystem: {{ .Values.keycloak.securityContext.readOnlyRootFilesystem }}
+          {{- end }}
+          {{- if .Values.keycloak.securityContext.capabilities }}
+          capabilities:
+            {{- toYaml .Values.keycloak.securityContext.capabilities | nindent 12 }}
+          {{- end }}
         {{- end }}
         ports:
         - containerPort: {{ .Values.keycloak.service.targetPort | default 8080 }}

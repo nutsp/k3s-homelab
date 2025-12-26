@@ -63,9 +63,7 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
         fsGroup: 1000
-        capabilities:
-          drop:
-          - ALL
+        # capabilities must be at container level, not pod level
       containers:
       - name: keycloak
         image: keycloak:26.4.7-postgres
@@ -73,6 +71,12 @@ spec:
         args:
           - start
           - --optimized
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
         ports:
         - containerPort: 8080
           name: http
