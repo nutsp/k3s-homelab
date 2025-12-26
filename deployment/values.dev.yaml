@@ -202,7 +202,7 @@ keycloak:
       secretName: keycloak-tls-secret
   # Health checks
   healthCheck:
-    enabled: true
+    enabled: false
     livenessProbe:
       httpGet:
         path: /health/live
@@ -223,7 +223,7 @@ keycloak:
       successThreshold: 1
   # Security context
   securityContext:
-    enabled: true
+    enabled: false
     runAsNonRoot: true
     runAsUser: 1000
     fsGroup: 1000

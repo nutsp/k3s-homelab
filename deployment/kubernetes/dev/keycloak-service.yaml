@@ -59,11 +59,6 @@ spec:
         app.kubernetes.io/name: keycloak-service
         app.kubernetes.io/instance: app-deployment
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
-        # capabilities must be at container level, not pod level
       containers:
       - name: keycloak
         image: docker.io/library/keycloak:26.4.7-postgres
@@ -71,12 +66,6 @@ spec:
         args:
           - start
           - --optimized
-        securityContext:
-          runAsNonRoot: true
-          runAsUser: 1000
-          capabilities:
-            drop:
-            - ALL
         ports:
         - containerPort: 8080
           name: http
@@ -147,24 +136,6 @@ spec:
         #     configMapKeyRef:
         #       name: keycloak-service-config
         #       key: proxy
-        livenessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /health/live
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 5
-        readinessProbe:
-          failureThreshold: 3
-          httpGet:
-            path: /health/ready
-            port: 8080
-          initialDelaySeconds: 60
-          periodSeconds: 10
-          successThreshold: 1
-          timeoutSeconds: 5
         resources:
           limits:
             cpu: 1000m
