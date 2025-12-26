@@ -50,7 +50,7 @@ spec:
         # Restart pods when image changes
         checksum/image: cXVheS5pby9rZXlj
         image.repository: "quay.io/keycloak/keycloak"
-        image.tag: "25.0.6"
+        image.tag: "26.4.7"
         # Restart pods when ConfigMap changes
         checksum/configmap: eyJob3N0bmFtZV9z
         # Restart pods when Secret changes
@@ -61,7 +61,7 @@ spec:
     spec:
       containers:
       - name: keycloak
-        image: quay.io/keycloak/keycloak:25.0.6
+        image: quay.io/keycloak/keycloak:26.4.7
         imagePullPolicy: IfNotPresent
         args:
           - start-dev

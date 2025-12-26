@@ -115,7 +115,7 @@ keycloak:
   replicas: 1
   image:
     repository: quay.io/keycloak/keycloak
-    tag: 25.0.6  # หรือใช้ latest
+    tag: 26.4.7  # หรือใช้ latest
     pullPolicy: IfNotPresent
     # Note: Keycloak optimized build includes PostgreSQL driver by default
   service:
