@@ -209,10 +209,8 @@ load-keycloak:
 	@echo "Loading keycloak image into k3s cluster..."
 	@docker save keycloak:26.4.7-postgres | sudo k3s ctr images import - || \
 		(docker save keycloak:26.4.7-postgres | sudo ctr -n k8s.io images import -)
-	@echo "Tagging image for k3s compatibility..."
-	@sudo k3s ctr images tag keycloak:26.4.7-postgres docker.io/library/keycloak:26.4.7-postgres || \
-		(sudo ctr -n k8s.io images tag keycloak:26.4.7-postgres docker.io/library/keycloak:26.4.7-postgres)
 	@echo "✓ Keycloak image loaded into k3s cluster"
+	@echo "Image name: docker.io/library/keycloak:26.4.7-postgres"
 	@echo "Verify: sudo k3s ctr images list | grep keycloak"
 
 ## build-and-load-keycloak: build and load Keycloak image
