@@ -112,7 +112,7 @@ notificationJob:
 keycloak:
   enabled: true
   namespace: keycloak
-  replicas: 2  # Production: use multiple replicas for HA
+  replicas: 1  # Production: use multiple replicas for HA
   image:
     repository: docker.io/library/keycloak
     tag: 26.4.7-postgres  # หรือใช้ latest
