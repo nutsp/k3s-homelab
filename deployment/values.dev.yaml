@@ -45,9 +45,11 @@ auth:
     db_host: localhost
     db_port: "5432"
     db_name: auth_db
+  healthCheck:
+    enabled: false 
   securityContext:
     enabled: false
-    
+
 profile:
   enabled: true
   namespace: app
@@ -73,6 +75,8 @@ profile:
     limits:
       memory: "256Mi"
       cpu: "400m"
+  healthCheck:
+    enabled: false 
   securityContext:
     enabled: false
 
