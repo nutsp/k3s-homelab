@@ -57,6 +57,10 @@ spec:
         command:
           {{- toYaml .Values.keycloak.command | nindent 10 }}
         {{- end }}
+        {{- if .Values.keycloak.args }}
+        args:
+          {{- toYaml .Values.keycloak.args | nindent 10 }}
+        {{- end }}
         ports:
         - containerPort: {{ .Values.keycloak.service.targetPort | default 8080 }}
           name: http
