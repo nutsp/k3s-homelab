@@ -30,7 +30,7 @@ ingress:
 auth:
   enabled: true
   namespace: app
-  replicas: 2
+  replicas: 1
   image:
     repository: nginx
     tag: 1.29-alpine3.23  # Recommended: Use specific version tag (e.g., v1.2.3)
