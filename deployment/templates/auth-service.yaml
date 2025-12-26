@@ -1,0 +1,121 @@
+{{- if .Values.auth.enabled }}
+---
+# Deployment for auth service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.auth.service.name }}
+  namespace: {{ .Values.auth.namespace }}
+  labels:
+    {{- include "deployment.auth.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.auth.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "deployment.auth.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        # Restart pods when image changes
+        checksum/image: {{ include "deployment.auth.image.checksum" . }}
+        image.repository: {{ .Values.auth.image.repository | quote }}
+        image.tag: {{ .Values.auth.image.tag | default "latest" | quote }}
+        # Restart pods when ConfigMap changes
+        checksum/configmap: {{ include "deployment.auth.configmap.checksum" . }}
+        # Restart pods when Secret changes
+        checksum/secret: {{ include "deployment.auth.secret.checksum" . }}
+      labels:
+        {{- include "deployment.auth.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if and .Values.auth.securityContext .Values.auth.securityContext.enabled }}
+      securityContext:
+        {{- if .Values.auth.securityContext.runAsNonRoot }}
+        runAsNonRoot: {{ .Values.auth.securityContext.runAsNonRoot }}
+        {{- end }}
+        {{- if .Values.auth.securityContext.runAsUser }}
+        runAsUser: {{ .Values.auth.securityContext.runAsUser }}
+        {{- end }}
+        {{- if .Values.auth.securityContext.fsGroup }}
+        fsGroup: {{ .Values.auth.securityContext.fsGroup }}
+        {{- end }}
+        {{- if .Values.auth.securityContext.allowPrivilegeEscalation }}
+        allowPrivilegeEscalation: {{ .Values.auth.securityContext.allowPrivilegeEscalation }}
+        {{- end }}
+        {{- if .Values.auth.securityContext.readOnlyRootFilesystem }}
+        readOnlyRootFilesystem: {{ .Values.auth.securityContext.readOnlyRootFilesystem }}
+        {{- end }}
+        {{- if .Values.auth.securityContext.capabilities }}
+        capabilities:
+          {{- toYaml .Values.auth.securityContext.capabilities | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: auth-service
+        image: {{ include "deployment.auth.image" . }}
+        imagePullPolicy: {{ .Values.auth.image.pullPolicy | default "IfNotPresent" }}
+        ports:
+        - containerPort: {{ .Values.auth.service.targetPort | default 80 }}
+          name: http
+          protocol: TCP
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.auth.service.name }}-secrets
+              key: db_user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.auth.service.name }}-secrets
+              key: db_password
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.auth.service.name }}-secrets
+              key: db_host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.auth.service.name }}-secrets
+              key: db_port
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.auth.service.name }}-secrets
+              key: db_name
+        - name: VIRTUAL_SERVER_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.auth.service.name }}-config
+              key: virtual_server_enabled
+        {{- if and .Values.auth.healthCheck .Values.auth.healthCheck.enabled }}
+        {{- if .Values.auth.healthCheck.livenessProbe }}
+        livenessProbe:
+          {{- toYaml .Values.auth.healthCheck.livenessProbe | nindent 10 }}
+        {{- end }}
+        {{- if .Values.auth.healthCheck.readinessProbe }}
+        readinessProbe:
+          {{- toYaml .Values.auth.healthCheck.readinessProbe | nindent 10 }}
+        {{- end }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.auth.resources | nindent 10 }}
+---
+# Service for auth service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.auth.service.name }}
+  namespace: {{ .Values.auth.namespace }}
+  labels:
+    {{- include "deployment.auth.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.auth.service.type | default "ClusterIP" }}
+  selector:
+    {{- include "deployment.auth.selectorLabels" . | nindent 4 }}
+  ports:
+    - port: {{ .Values.auth.service.port | default 80 }}
+      targetPort: {{ .Values.auth.service.targetPort | default 80 }}
+      protocol: TCP
+      name: http
+{{- end }}

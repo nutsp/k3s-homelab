@@ -1,0 +1,101 @@
+# Global settings
+global:
+  namespace: app
+
+# Centralized Ingress configuration
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/rule-type: PathPrefix
+  middlewares: []
+  tls:
+    enabled: false
+  hosts:
+    - host: auth.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: auth-service
+            servicePort: 80
+    - host: profile.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: profile-service
+            servicePort: 80
+
+auth:
+  enabled: true
+  namespace: app
+  replicas: 2
+  image:
+    repository: nginx
+    tag: latest  # Recommended: Use specific version tag (e.g., v1.2.3)
+    pullPolicy: Always  # Use Always when using latest tag
+  service:
+    name: auth-service
+  configmaps:
+    virtual_server_enabled: "true"
+  secrets:
+    db_user: admin
+    db_password: password
+    db_host: localhost
+    db_port: "5432"
+    db_name: auth_db
+
+profile:
+  enabled: true
+  namespace: app
+  replicas: 1
+  image:
+    repository: nginx
+    tag: latest  # Recommended: Use specific version tag (e.g., v1.2.3)
+    pullPolicy: Always  # Use Always when using latest tag
+  service:
+    name: profile-service
+  configmaps:
+    virtual_server_enabled: "true"
+  secrets:
+    db_user: admin
+    db_password: password
+    db_host: localhost
+    db_port: "5432"
+    db_name: profile_db
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "200m"
+    limits:
+      memory: "256Mi"
+      cpu: "400m"
+
+notificationJob:
+  enabled: true
+  name: notification-job
+  namespace: app
+  schedule: "*/5 * * * *"  # ทุก 5 นาที (สำหรับ testing)
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  startingDeadlineSeconds: 300
+  activeDeadlineSeconds: 3600
+  backoffLimit: 3
+  restartPolicy: OnFailure
+  image:
+    repository: nginx
+    tag: latest
+    pullPolicy: Always
+  command: []
+  args: []
+  configmaps:
+    virtual_server_enabled: "true"
+  secrets:
+    db_user: admin
+    db_password: password
+    db_host: localhost
+    db_port: "5432"
+    db_name: notification_db
+  env: []

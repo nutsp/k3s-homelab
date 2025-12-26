@@ -1,0 +1,30 @@
+{{- if .Values.auth.enabled }}
+---
+# ConfigMap for auth service configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.auth.service.name }}-config
+  namespace: {{ .Values.auth.namespace }}
+  labels:
+    {{- include "deployment.auth.labels" . | nindent 4 }}
+data:
+  virtual_server_enabled: {{ .Values.auth.configmaps.virtual_server_enabled | quote }}
+---
+# Secret for auth service credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.auth.service.name }}-secrets
+  namespace: {{ .Values.auth.namespace }}
+  labels:
+    {{- include "deployment.auth.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  db_user: {{ .Values.auth.secrets.db_user | quote }}
+  db_password: {{ .Values.auth.secrets.db_password | quote }}
+  db_host: {{ .Values.auth.secrets.db_host | quote }}
+  db_port: {{ .Values.auth.secrets.db_port | quote }}
+  db_name: {{ .Values.auth.secrets.db_name | quote }}
+{{- end }}
+

@@ -1,0 +1,30 @@
+{{- if .Values.profile.enabled }}
+---
+# ConfigMap for profile service configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.profile.service.name }}-config
+  namespace: {{ .Values.profile.namespace }}
+  labels:
+    {{- include "deployment.profile.labels" . | nindent 4 }}
+data:
+  virtual_server_enabled: {{ .Values.profile.configmaps.virtual_server_enabled | quote }}
+---
+# Secret for profile service credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.profile.service.name }}-secrets
+  namespace: {{ .Values.profile.namespace }}
+  labels:
+    {{- include "deployment.profile.labels" . | nindent 4 }}
+type: Opaque
+stringData:
+  db_user: {{ .Values.profile.secrets.db_user | quote }}
+  db_password: {{ .Values.profile.secrets.db_password | quote }}
+  db_host: {{ .Values.profile.secrets.db_host | quote }}
+  db_port: {{ .Values.profile.secrets.db_port | quote }}
+  db_name: {{ .Values.profile.secrets.db_name | quote }}
+{{- end }}
+

@@ -1,0 +1,81 @@
+---
+# Source: deployment/templates/notification-job.yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: notification-job
+  namespace: app
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: deployment
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: notification-job
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 3600
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: notification-job
+            app.kubernetes.io/instance: app-deployment
+            app.kubernetes.io/component: notification-job
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: notification-job
+            image: nginx:latest
+            imagePullPolicy: Always
+            env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: notification-job-secrets
+                  key: db_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: notification-job-secrets
+                  key: db_password
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: notification-job-secrets
+                  key: db_host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: notification-job-secrets
+                  key: db_port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: notification-job-secrets
+                  key: db_name
+            - name: VIRTUAL_SERVER_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: notification-job-config
+                  key: virtual_server_enabled
+            resources:
+              limits:
+                cpu: 200m
+                memory: 128Mi
+              requests:
+                cpu: 100m
+                memory: 64Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            fsGroup: 1000
+            capabilities:
+              drop:
+              - ALL

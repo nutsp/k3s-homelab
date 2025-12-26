@@ -1,0 +1,38 @@
+---
+# Source: deployment/templates/ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: app-deployment-ingress
+  namespace: app
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: deployment
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    traefik.ingress.kubernetes.io/rule-type: PathPrefix
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: "auth.local"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-service
+            port:
+              number: 80
+  - host: "profile.local"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: profile-service
+            port:
+              number: 80

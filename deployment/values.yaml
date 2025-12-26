@@ -1,0 +1,222 @@
+# Default values for deployment chart
+# This is a YAML-formatted file.
+
+# Global settings
+global:
+  namespace: app
+
+# Ingress configuration (centralized)
+ingress:
+  enabled: false
+  className: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/rule-type: PathPrefix
+  middlewares: []  # e.g., ["app-rate-limit@kubernetescrd"]
+  tls:
+    enabled: false
+    secretName: app-tls-secret
+  # Define routes for all services
+  hosts:
+    # Auth service routes
+    - host: auth.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: auth-service
+            servicePort: 80
+    # Profile service routes
+    - host: profile.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            serviceName: profile-service
+            servicePort: 80
+    # Or use path-based routing on same host
+    # - host: api.example.com
+    #   paths:
+    #     - path: /auth
+    #       pathType: Prefix
+    #       backend:
+    #         serviceName: auth-service
+    #         servicePort: 80
+    #     - path: /profile
+    #       pathType: Prefix
+    #       backend:
+    #         serviceName: profile-service
+    #         servicePort: 80
+
+# Auth service configuration
+auth:
+  enabled: true
+  namespace: app
+  replicas: 2
+  image:
+    repository: ghcr.io/k3s-homelab/auth
+    tag: latest  # Recommended: Use specific version tag (e.g., v1.2.3) instead of latest
+    pullPolicy: Always  # Use Always when using latest tag, or IfNotPresent for specific versions
+  service:
+    name: auth-service
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+  configmaps:
+    virtual_server_enabled: "true"
+  secrets:
+    db_user: admin
+    db_password: password
+    db_host: localhost
+    db_port: "5432"
+    db_name: auth_db
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "100m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
+  # Health checks
+  healthCheck:
+    enabled: true
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 80
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+      successThreshold: 1
+  # Security context
+  securityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop:
+        - ALL
+
+# Profile service configuration
+profile:
+  enabled: false
+  namespace: app
+  replicas: 2
+  image:
+    repository: ghcr.io/k3s-homelab/profile
+    tag: latest  # Recommended: Use specific version tag (e.g., v1.2.3) instead of latest
+    pullPolicy: Always  # Use Always when using latest tag, or IfNotPresent for specific versions
+  service:
+    name: profile-service
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+  configmaps:
+    virtual_server_enabled: "true"
+  secrets:
+    db_user: admin
+    db_password: password
+    db_host: localhost
+    db_port: "5432"
+    db_name: profile_db
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "100m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
+  # Health checks
+  healthCheck:
+    enabled: true
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 80
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+      successThreshold: 1
+    readinessProbe:
+      httpGet:
+        path: /ready
+        port: 80
+      initialDelaySeconds: 5
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 3
+      successThreshold: 1
+  # Security context
+  securityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop:
+        - ALL
+
+# Notification Job (CronJob) configuration
+notificationJob:
+  enabled: false
+  name: notification-job
+  namespace: app
+  schedule: "0 9 * * *"  # ทุกวันเวลา 09:00 น. (Cron format: minute hour day month weekday)
+  concurrencyPolicy: Forbid  # Allow, Forbid, Replace
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  startingDeadlineSeconds: 300  # 5 minutes
+  activeDeadlineSeconds: 3600  # 1 hour
+  backoffLimit: 3
+  restartPolicy: OnFailure
+  image:
+    repository: ghcr.io/k3s-homelab/notification
+    tag: latest
+    pullPolicy: IfNotPresent
+  command: []
+  args: []
+  configmaps:
+    virtual_server_enabled: "true"
+  secrets:
+    db_user: admin
+    db_password: password
+    db_host: localhost
+    db_port: "5432"
+    db_name: notification_db
+  env: []
+  envFrom: []
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "100m"
+    limits:
+      memory: "128Mi"
+      cpu: "200m"
+  imagePullSecrets: []
+  # Security context for notification job
+  securityContext:
+    enabled: true
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    capabilities:
+      drop:
+        - ALL
+

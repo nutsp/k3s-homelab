@@ -1,0 +1,39 @@
+---
+# Source: deployment/templates/notification-config.yaml
+# Secret for notification job database credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: notification-job-secrets
+  namespace: app
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: deployment
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: notification-job
+type: Opaque
+stringData:
+  db_user: "admin"
+  db_password: "password"
+  db_host: "localhost"
+  db_port: "5432"
+  db_name: "notification_db"
+---
+# Source: deployment/templates/notification-config.yaml
+# ConfigMap for notification job configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-job-config
+  namespace: app
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: deployment
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: notification-job
+data:
+  virtual_server_enabled: "true"

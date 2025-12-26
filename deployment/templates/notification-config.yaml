@@ -1,0 +1,32 @@
+{{- if .Values.notificationJob.enabled }}
+---
+# ConfigMap for notification job configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.notificationJob.name }}-config
+  namespace: {{ .Values.notificationJob.namespace | default .Values.global.namespace | default "default" }}
+  labels:
+    {{- include "deployment.labels" . | nindent 4 }}
+    app.kubernetes.io/component: notification-job
+data:
+  virtual_server_enabled: {{ .Values.notificationJob.configmaps.virtual_server_enabled | quote }}
+---
+# Secret for notification job database credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.notificationJob.name }}-secrets
+  namespace: {{ .Values.notificationJob.namespace | default .Values.global.namespace | default "default" }}
+  labels:
+    {{- include "deployment.labels" . | nindent 4 }}
+    app.kubernetes.io/component: notification-job
+type: Opaque
+stringData:
+  db_user: {{ .Values.notificationJob.secrets.db_user | quote }}
+  db_password: {{ .Values.notificationJob.secrets.db_password | quote }}
+  db_host: {{ .Values.notificationJob.secrets.db_host | quote }}
+  db_port: {{ .Values.notificationJob.secrets.db_port | quote }}
+  db_name: {{ .Values.notificationJob.secrets.db_name | quote }}
+{{- end }}
+

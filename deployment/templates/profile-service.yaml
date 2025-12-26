@@ -1,0 +1,122 @@
+{{- if .Values.profile.enabled }}
+---
+# Deployment for profile service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.profile.service.name }}
+  namespace: {{ .Values.profile.namespace }}
+  labels:
+    {{- include "deployment.profile.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.profile.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "deployment.profile.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        # Restart pods when image changes
+        checksum/image: {{ include "deployment.profile.image.checksum" . }}
+        image.repository: {{ .Values.profile.image.repository | quote }}
+        image.tag: {{ .Values.profile.image.tag | default "latest" | quote }}
+        # Restart pods when ConfigMap changes
+        checksum/configmap: {{ include "deployment.profile.configmap.checksum" . }}
+        # Restart pods when Secret changes
+        checksum/secret: {{ include "deployment.profile.secret.checksum" . }}
+      labels:
+        {{- include "deployment.profile.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- if and .Values.profile.securityContext .Values.profile.securityContext.enabled }}
+      securityContext:
+        {{- if .Values.profile.securityContext.runAsNonRoot }}
+        runAsNonRoot: {{ .Values.profile.securityContext.runAsNonRoot }}
+        {{- end }}
+        {{- if .Values.profile.securityContext.runAsUser }}
+        runAsUser: {{ .Values.profile.securityContext.runAsUser }}
+        {{- end }}
+        {{- if .Values.profile.securityContext.fsGroup }}
+        fsGroup: {{ .Values.profile.securityContext.fsGroup }}
+        {{- end }}
+        {{- if .Values.profile.securityContext.allowPrivilegeEscalation }}
+        allowPrivilegeEscalation: {{ .Values.profile.securityContext.allowPrivilegeEscalation }}
+        {{- end }}
+        {{- if .Values.profile.securityContext.readOnlyRootFilesystem }}
+        readOnlyRootFilesystem: {{ .Values.profile.securityContext.readOnlyRootFilesystem }}
+        {{- end }}
+        {{- if .Values.profile.securityContext.capabilities }}
+        capabilities:
+          {{- toYaml .Values.profile.securityContext.capabilities | nindent 10 }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: profile-service
+        image: {{ include "deployment.profile.image" . }}
+        imagePullPolicy: {{ .Values.profile.image.pullPolicy | default "IfNotPresent" }}
+        ports:
+        - containerPort: {{ .Values.profile.service.targetPort | default 80 }}
+          name: http
+          protocol: TCP
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.profile.service.name }}-secrets
+              key: db_user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.profile.service.name }}-secrets
+              key: db_password
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.profile.service.name }}-secrets
+              key: db_host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.profile.service.name }}-secrets
+              key: db_port
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.profile.service.name }}-secrets
+              key: db_name
+        - name: VIRTUAL_SERVER_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Values.profile.service.name }}-config
+              key: virtual_server_enabled
+        {{- if and .Values.profile.healthCheck .Values.profile.healthCheck.enabled }}
+        {{- if .Values.profile.healthCheck.livenessProbe }}
+        livenessProbe:
+          {{- toYaml .Values.profile.healthCheck.livenessProbe | nindent 10 }}
+        {{- end }}
+        {{- if .Values.profile.healthCheck.readinessProbe }}
+        readinessProbe:
+          {{- toYaml .Values.profile.healthCheck.readinessProbe | nindent 10 }}
+        {{- end }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.profile.resources | nindent 10 }}
+---
+# Service for profile service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.profile.service.name }}
+  namespace: {{ .Values.profile.namespace }}
+  labels:
+    {{- include "deployment.profile.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.profile.service.type | default "ClusterIP" }}
+  selector:
+    {{- include "deployment.profile.selectorLabels" . | nindent 4 }}
+  ports:
+    - port: {{ .Values.profile.service.port | default 80 }}
+      targetPort: {{ .Values.profile.service.targetPort | default 80 }}
+      protocol: TCP
+      name: http
+{{- end }}
+

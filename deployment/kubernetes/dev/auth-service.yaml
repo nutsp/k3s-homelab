@@ -1,0 +1,132 @@
+---
+# Source: deployment/templates/auth-service.yaml
+# Service for auth service
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: app
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/component: auth
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/instance: app-deployment
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+      name: http
+---
+# Source: deployment/templates/auth-service.yaml
+# Deployment for auth service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: app
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: auth-service
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/component: auth
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth-service
+      app.kubernetes.io/instance: app-deployment
+  template:
+    metadata:
+      annotations:
+        # Restart pods when image changes
+        checksum/image: bmdpbng6bGF0ZXN0
+        image.repository: "nginx"
+        image.tag: "latest"
+        # Restart pods when ConfigMap changes
+        checksum/configmap: eyJ2aXJ0dWFsX3Nl
+        # Restart pods when Secret changes
+        checksum/secret: eyJkYl9ob3N0Ijoi
+      labels:
+        app.kubernetes.io/name: auth-service
+        app.kubernetes.io/instance: app-deployment
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        capabilities:
+          drop:
+          - ALL
+      containers:
+      - name: auth-service
+        image: nginx:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: auth-service-secrets
+              key: db_user
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: auth-service-secrets
+              key: db_password
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: auth-service-secrets
+              key: db_host
+        - name: DB_PORT
+          valueFrom:
+            secretKeyRef:
+              name: auth-service-secrets
+              key: db_port
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: auth-service-secrets
+              key: db_name
+        - name: VIRTUAL_SERVER_ENABLED
+          valueFrom:
+            configMapKeyRef:
+              name: auth-service-config
+              key: virtual_server_enabled
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /ready
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+          timeoutSeconds: 3
+        resources:
+          limits:
+            cpu: 200m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi

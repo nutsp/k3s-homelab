@@ -1,0 +1,126 @@
+{{- if .Values.notificationJob.enabled }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Values.notificationJob.name }}
+  namespace: {{ .Values.notificationJob.namespace | default .Values.global.namespace | default "default" }}
+  labels:
+    {{- include "deployment.labels" . | nindent 4 }}
+    app.kubernetes.io/component: notification-job
+spec:
+  schedule: {{ .Values.notificationJob.schedule | quote }}
+  {{- if .Values.notificationJob.concurrencyPolicy }}
+  concurrencyPolicy: {{ .Values.notificationJob.concurrencyPolicy }}
+  {{- end }}
+  {{- if .Values.notificationJob.successfulJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.notificationJob.successfulJobsHistoryLimit }}
+  {{- end }}
+  {{- if .Values.notificationJob.failedJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.notificationJob.failedJobsHistoryLimit }}
+  {{- end }}
+  {{- if .Values.notificationJob.startingDeadlineSeconds }}
+  startingDeadlineSeconds: {{ .Values.notificationJob.startingDeadlineSeconds }}
+  {{- end }}
+  jobTemplate:
+    spec:
+      {{- if .Values.notificationJob.activeDeadlineSeconds }}
+      activeDeadlineSeconds: {{ .Values.notificationJob.activeDeadlineSeconds }}
+      {{- end }}
+      {{- if .Values.notificationJob.backoffLimit }}
+      backoffLimit: {{ .Values.notificationJob.backoffLimit }}
+      {{- end }}
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: {{ .Values.notificationJob.name }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+            app.kubernetes.io/component: notification-job
+        spec:
+          {{- if .Values.notificationJob.restartPolicy }}
+          restartPolicy: {{ .Values.notificationJob.restartPolicy }}
+          {{- else }}
+          restartPolicy: OnFailure
+          {{- end }}
+          containers:
+          - name: {{ .Values.notificationJob.name }}
+            image: {{ .Values.notificationJob.image.repository }}:{{ .Values.notificationJob.image.tag | default "latest" }}
+            imagePullPolicy: {{ .Values.notificationJob.image.pullPolicy | default "IfNotPresent" }}
+            {{- if .Values.notificationJob.command }}
+            command:
+              {{- toYaml .Values.notificationJob.command | nindent 14 }}
+            {{- end }}
+            {{- if .Values.notificationJob.args }}
+            args:
+              {{- toYaml .Values.notificationJob.args | nindent 14 }}
+            {{- end }}
+            env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.notificationJob.name }}-secrets
+                  key: db_user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.notificationJob.name }}-secrets
+                  key: db_password
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.notificationJob.name }}-secrets
+                  key: db_host
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.notificationJob.name }}-secrets
+                  key: db_port
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.notificationJob.name }}-secrets
+                  key: db_name
+            - name: VIRTUAL_SERVER_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.notificationJob.name }}-config
+                  key: virtual_server_enabled
+            {{- if .Values.notificationJob.env }}
+            {{- toYaml .Values.notificationJob.env | nindent 12 }}
+            {{- end }}
+            {{- if .Values.notificationJob.envFrom }}
+            envFrom:
+              {{- toYaml .Values.notificationJob.envFrom | nindent 14 }}
+            {{- end }}
+            {{- if .Values.notificationJob.resources }}
+            resources:
+              {{- toYaml .Values.notificationJob.resources | nindent 14 }}
+            {{- end }}
+          {{- if and .Values.notificationJob.securityContext .Values.notificationJob.securityContext.enabled }}
+          securityContext:
+            {{- if .Values.notificationJob.securityContext.runAsNonRoot }}
+            runAsNonRoot: {{ .Values.notificationJob.securityContext.runAsNonRoot }}
+            {{- end }}
+            {{- if .Values.notificationJob.securityContext.runAsUser }}
+            runAsUser: {{ .Values.notificationJob.securityContext.runAsUser }}
+            {{- end }}
+            {{- if .Values.notificationJob.securityContext.fsGroup }}
+            fsGroup: {{ .Values.notificationJob.securityContext.fsGroup }}
+            {{- end }}
+            {{- if .Values.notificationJob.securityContext.allowPrivilegeEscalation }}
+            allowPrivilegeEscalation: {{ .Values.notificationJob.securityContext.allowPrivilegeEscalation }}
+            {{- end }}
+            {{- if .Values.notificationJob.securityContext.readOnlyRootFilesystem }}
+            readOnlyRootFilesystem: {{ .Values.notificationJob.securityContext.readOnlyRootFilesystem }}
+            {{- end }}
+            {{- if .Values.notificationJob.securityContext.capabilities }}
+            capabilities:
+              {{- toYaml .Values.notificationJob.securityContext.capabilities | nindent 14 }}
+            {{- end }}
+          {{- end }}
+          {{- if .Values.notificationJob.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml .Values.notificationJob.imagePullSecrets | nindent 12 }}
+          {{- end }}
+{{- end }}
+

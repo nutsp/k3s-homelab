@@ -1,0 +1,39 @@
+---
+# Source: deployment/templates/profile-config.yaml
+# Secret for profile service credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: profile-service-secrets
+  namespace: app
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: profile-service
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/component: profile
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+stringData:
+  db_user: "admin"
+  db_password: "password"
+  db_host: "localhost"
+  db_port: "5432"
+  db_name: "profile_db"
+---
+# Source: deployment/templates/profile-config.yaml
+# ConfigMap for profile service configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: profile-service-config
+  namespace: app
+  labels:
+    helm.sh/chart: deployment-0.1.0
+    app.kubernetes.io/name: profile-service
+    app.kubernetes.io/instance: app-deployment
+    app.kubernetes.io/component: profile
+    app.kubernetes.io/version: "1.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  virtual_server_enabled: "true"
