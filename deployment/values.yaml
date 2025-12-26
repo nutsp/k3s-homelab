@@ -3,7 +3,7 @@
 
 # Global settings
 global:
-  namespace: ingress
+  namespace: app
 
 # Ingress configuration (centralized)
 ingress:
@@ -33,15 +33,6 @@ ingress:
           backend:
             serviceName: profile-service
             servicePort: 80
-    # Keycloak service routes (cross-namespace: service in keycloak namespace)
-    - host: keycloak.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-          backend:
-            serviceName: keycloak-service
-            servicePort: 8080
-            serviceNamespace: keycloak  # Traefik supports cross-namespace services
     # Or use path-based routing on same host
     # - host: api.example.com
     #   paths:
@@ -303,9 +294,19 @@ keycloak:
       timeoutSeconds: 5
       failureThreshold: 3
       successThreshold: 1
-  # Ingress configuration for Keycloak (using centralized ingress instead)
+  # Ingress configuration for Keycloak (separate ingress in keycloak namespace)
   ingress:
-    enabled: false  # Disabled - using centralized ingress in ingress namespace
+    enabled: true
+    className: traefik
+    host: keycloak.example.com
+    path: /
+    pathType: Prefix
+    annotations:
+      traefik.ingress.kubernetes.io/rule-type: PathPrefix
+    middlewares: []
+    tls:
+      enabled: false
+      secretName: keycloak-tls-secret
   # Security context
   securityContext:
     enabled: true

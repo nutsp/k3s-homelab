@@ -75,6 +75,13 @@ dev: check-helm clean-output
 		echo "# Keycloak service not enabled or empty" > $(OUTPUT_DIR)/keycloak-service.yaml; \
 		echo "✓ Generated: $(OUTPUT_DIR)/keycloak-service.yaml (empty - keycloak disabled)"; \
 	fi
+	@echo "Generating keycloak-ingress.yaml..."
+	@if $(HELM) template $(RELEASE_NAME) . --values ./$(VALUES_FILE) --show-only templates/keycloak-ingress.yaml > $(OUTPUT_DIR)/keycloak-ingress.yaml 2>/dev/null && [ -s $(OUTPUT_DIR)/keycloak-ingress.yaml ]; then \
+		echo "✓ Generated: $(OUTPUT_DIR)/keycloak-ingress.yaml"; \
+	else \
+		echo "# Keycloak ingress not enabled or empty" > $(OUTPUT_DIR)/keycloak-ingress.yaml; \
+		echo "✓ Generated: $(OUTPUT_DIR)/keycloak-ingress.yaml (empty - keycloak ingress disabled)"; \
+	fi
 	@echo ""
 	@echo "To deploy:"
 	@echo "  kubectl apply -f $(OUTPUT_DIR)/auth-config.yaml"
@@ -86,6 +93,7 @@ dev: check-helm clean-output
 	@echo "  kubectl apply -f $(OUTPUT_DIR)/notification-job.yaml"
 	@echo "  kubectl apply -f $(OUTPUT_DIR)/keycloak-config.yaml"
 	@echo "  kubectl apply -f $(OUTPUT_DIR)/keycloak-service.yaml"
+	@echo "  kubectl apply -f $(OUTPUT_DIR)/keycloak-ingress.yaml"
 	@echo "  or"
 	@echo "  helm install $(RELEASE_NAME) . --values ./$(VALUES_FILE) --namespace $(NAMESPACE) --create-namespace"
 
@@ -139,6 +147,9 @@ validate: dev
 	fi
 	@if [ -s $(OUTPUT_DIR)/keycloak-service.yaml ] && ! grep -q "not enabled\|empty" $(OUTPUT_DIR)/keycloak-service.yaml; then \
 		kubectl --dry-run=client -f $(OUTPUT_DIR)/keycloak-service.yaml apply > /dev/null 2>&1 && echo "✓ keycloak-service.yaml validation passed" || echo "✗ keycloak-service.yaml validation failed"; \
+	fi
+	@if [ -s $(OUTPUT_DIR)/keycloak-ingress.yaml ] && ! grep -q "not enabled\|empty" $(OUTPUT_DIR)/keycloak-ingress.yaml; then \
+		kubectl --dry-run=client -f $(OUTPUT_DIR)/keycloak-ingress.yaml apply > /dev/null 2>&1 && echo "✓ keycloak-ingress.yaml validation passed" || echo "✗ keycloak-ingress.yaml validation failed"; \
 	fi
 
 ## install: install the chart using Helm

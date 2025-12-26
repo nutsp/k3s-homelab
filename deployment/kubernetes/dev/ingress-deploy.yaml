@@ -4,7 +4,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: app-deployment-ingress
-  namespace: ingress
+  namespace: app
   labels:
     helm.sh/chart: deployment-0.1.0
     app.kubernetes.io/name: deployment
@@ -39,19 +39,6 @@ spec:
             name: profile-service
             port:
               number: 80
-            # Note: Kubernetes Ingress doesn't support namespace in service backend
-            # Traefik will automatically search for services across all namespaces
-            # serviceNamespace in values is for documentation only
-  - host: "keycloak.local"
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: keycloak-service
-            port:
-              number: 8080
             # Note: Kubernetes Ingress doesn't support namespace in service backend
             # Traefik will automatically search for services across all namespaces
             # serviceNamespace in values is for documentation only
