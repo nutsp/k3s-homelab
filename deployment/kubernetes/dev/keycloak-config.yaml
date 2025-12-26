@@ -21,6 +21,7 @@ stringData:
   db_host: "192.168.1.126"
   db_port: "5432"
   db_name: "keycloak"
+  db_url: "jdbc:postgresql://192.168.1.126:5432/keycloak"
   admin_user: "admin"
   admin_password: "admin"
 ---

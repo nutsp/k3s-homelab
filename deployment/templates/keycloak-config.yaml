@@ -29,6 +29,7 @@ stringData:
   db_host: {{ .Values.keycloak.secrets.db_host | quote }}
   db_port: {{ .Values.keycloak.secrets.db_port | quote }}
   db_name: {{ .Values.keycloak.secrets.db_name | quote }}
+  db_url: "jdbc:postgresql://{{ .Values.keycloak.secrets.db_host }}:{{ .Values.keycloak.secrets.db_port }}/{{ .Values.keycloak.secrets.db_name }}"
   admin_user: {{ .Values.keycloak.secrets.admin_user | quote }}
   admin_password: {{ .Values.keycloak.secrets.admin_password | quote }}
 {{- end }}
