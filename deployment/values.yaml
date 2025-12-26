@@ -228,7 +228,7 @@ keycloak:
   image:
     repository: quay.io/keycloak/keycloak
     tag: 25.0.6  # หรือใช้ latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Never
   service:
     name: keycloak-service
     type: ClusterIP
